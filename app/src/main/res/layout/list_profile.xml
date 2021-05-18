@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="timeZone"
+            type="com.makeevrserg.technicalremake.database.TimeZoneScheduler" />
+
+        <variable
+            name="clickListener"
+            type="com.makeevrserg.technicalremake.scheduler.TimeZoneListener" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5sp">
+
+        <TextView
+            android:id="@+id/textViewDay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@{timeZone.day}"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+        <LinearLayout
+            android:id="@+id/linearLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewDay"
+            app:setDay="@{timeZone}">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_check"
+                android:textAlignment="center"
+                app:brokenImage="@{timeZone}" />
+
+            <!--            <ImageView-->
+            <!--                android:layout_width="wrap_content"-->
+            <!--                android:layout_height="match_parent"-->
+            <!--                android:src="@drawable/ic_warn"-->
+            <!--                android:textAlignment="center"-->
+            <!--                android:visibility="@{timeZone.broken?View.VISIBLE:View.GONE}" />-->
+
+            <TextView
+                android:id="@+id/textViewTimeFrom"
+                android:layout_width="150dp"
+                android:layout_height="match_parent"
+                android:layout_marginHorizontal="10sp"
+                android:text='@{timeZone.from+"-"+timeZone.to}'
+                android:textAlignment="textStart"
+                android:textColor="@color/black"
+                android:textSize="20sp" />
+
+
+            <TextView
+                android:id="@+id/textViewPlaylist"
+                android:layout_width="100dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:textSize="20sp"
+                android:text="@{String.valueOf(timeZone.playlistName)}"
+                android:textAlignment="textStart" />
+
+
+            <ImageView
+                android:id="@+id/imageViewSub"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:onClick="@{(v)->clickListener.onClick(timeZone,v)}"
+                android:src="@drawable/ic_sub"
+                android:textAlignment="center" />
+
+
+            <TextView
+                android:id="@+id/textViewProportion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="10sp"
+                app:setProportion="@{timeZone}"
+                android:textAlignment="center"
+                android:textColor="@color/black"
+                android:textSize="20sp" />
+
+            <ImageView
+                android:id="@+id/imageViewAdd"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:onClick="@{(v)->clickListener.onClick(timeZone,v)}"
+                android:src="@drawable/ic_add"
+                android:textAlignment="center" />
+
+
+        </LinearLayout>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout><!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+    <!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
+    <!--    xmlns:tools="http://schemas.android.com/tools"-->
+    <!--    android:layout_width="wrap_content"-->
+    <!--    android:layout_height="wrap_content">-->
+
+    <!--</LinearLayout>-->

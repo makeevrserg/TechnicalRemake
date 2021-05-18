@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/scheduler_destination">
+
+    <fragment
+        android:id="@+id/scheduler_destination"
+        android:name="com.makeevrserg.technicalremake.scheduler.SchedulerFragment"
+        android:label="SchedulerFragment"
+        tools:layout="@layout/fragment_scheduler" >
+        <action
+            android:id="@+id/action_schedulerFragment_to_playerFragment"
+            app:destination="@id/playerFragment"
+            app:popUpTo="@id/scheduler_destination" />
+    </fragment>
+    <fragment
+        android:id="@+id/playerFragment"
+        android:name="com.makeevrserg.technicalremake.player.PlayerFragment"
+        android:label="PlayerFragment"
+        tools:layout="@layout/player_fragment">
+    </fragment>
+</navigation>
