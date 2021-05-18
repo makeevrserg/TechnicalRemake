@@ -17,8 +17,8 @@ import kotlin.concurrent.fixedRateTimer
 import kotlin.random.Random
 
 class PlayerViewModel(
-    val database: DatabaseDao,
-    application: Application
+        val database: DatabaseDao,
+        application: Application
 ) : AndroidViewModel(application) {
 
 
@@ -49,7 +49,7 @@ class PlayerViewModel(
 
     private val cacheDir: File = application.cacheDir
     private var crossfadePlayer: CrossfadePlayer =
-        CrossfadePlayer(application.applicationContext, cacheDir.path)
+            CrossfadePlayer(application.applicationContext, cacheDir.path)
 
     lateinit var timer: Timer
 
@@ -85,6 +85,10 @@ class PlayerViewModel(
                 oldPlaylistMap = playlistMap
 
             val musicInfos: List<MusicInfo> = getMusicFiles(playlistMap)
+            if (musicInfos.isEmpty()) {
+                _isEmpty.postValue(true)
+                return@launch
+            }
             crossfadePlayer.update(musicInfos)
             _isLoading.postValue(false)
             _isUpdated.postValue(true)
@@ -103,13 +107,18 @@ class PlayerViewModel(
                 val proportion: Int = playlistMap[playlistId]!!
                 val musicIds: Array<Long> = database.getMusicIdsByPlaylistId(playlistId)
                 val playlistName: String = database.getPlaylistNameByPlaylistId(playlistId)
+                if (musicIds.isEmpty()) {
+
+                    _isEmpty.postValue(true)
+                    return@withContext musicToPlay
+                }
                 for (i in 0 until proportion) {
                     musicToPlay.add(
-                        MusicInfo(
-                            database.getFileName(
-                                musicIds[Random.nextInt(0, musicIds.size)]
-                            ), playlistName
-                        )
+                            MusicInfo(
+                                    database.getFileName(
+                                            musicIds[Random.nextInt(0, musicIds.size)]
+                                    ), playlistName
+                            )
                     )
 
                 }
