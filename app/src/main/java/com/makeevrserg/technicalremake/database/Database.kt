@@ -16,10 +16,9 @@ abstract class Database : RoomDatabase() {
             synchronized(this) {
                 var instance = INSTANCE
                 if (instance == null) {
-                    instance = Room.databaseBuilder(
+                    instance = Room.inMemoryDatabaseBuilder(
                         context.applicationContext,
-                        com.makeevrserg.technicalremake.database.Database::class.java,
-                        "scheduler_database"
+                        com.makeevrserg.technicalremake.database.Database::class.java
                     )
                         .fallbackToDestructiveMigration()
                         .build()

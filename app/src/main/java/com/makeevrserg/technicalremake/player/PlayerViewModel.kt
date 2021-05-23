@@ -49,7 +49,7 @@ class PlayerViewModel(
 
     private val cacheDir: File = application.cacheDir
     private var crossfadePlayer: CrossfadePlayer =
-            CrossfadePlayer(application.applicationContext, cacheDir.path)
+            CrossfadePlayer(viewModelScope,application.applicationContext, cacheDir.path)
 
     lateinit var timer: Timer
 
