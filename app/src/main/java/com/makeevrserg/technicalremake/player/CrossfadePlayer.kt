@@ -1,18 +1,15 @@
 package com.makeevrserg.technicalremake.player
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.android.exoplayer2.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.util.*
-import kotlin.concurrent.fixedRateTimer
 
-
-class CrossfadePlayer(val coroutineScope: CoroutineScope,val context: Context, val cacheDir: String) : Player.EventListener {
+class CrossfadePlayer(val context: Context, val cacheDir: String) : Player.EventListener {
     lateinit var mainPlayer: SimpleExoPlayer
     lateinit var crossfadePlayer: SimpleExoPlayer
     val TAG = "CrossfadePlayer"
@@ -24,18 +21,13 @@ class CrossfadePlayer(val coroutineScope: CoroutineScope,val context: Context, v
         mainPlayer = SimpleExoPlayer.Builder(context).build()
         mainPlayer.addListener(this)
         crossfadePlayer =
-                SimpleExoPlayer.Builder(context).build()
+            SimpleExoPlayer.Builder(context).build()
         mainPlayer.repeatMode = Player.REPEAT_MODE_ALL
-        mainPlayer.setThrowsWhenUsingWrongThread(false)
-        crossfadePlayer.setThrowsWhenUsingWrongThread(false)
-
-
         crossfadePlayer.repeatMode = Player.REPEAT_MODE_ALL
         crossfadePlayer.addListener(this)
 
 
     }
-
 
     private var _mediaName: MutableLiveData<String> = MutableLiveData("Загрузка...")
     public val mediaName: LiveData<String>
@@ -48,26 +40,30 @@ class CrossfadePlayer(val coroutineScope: CoroutineScope,val context: Context, v
     var timer: Timer? = null
 
 
-    override fun onEvents(player: Player, events: Player.Events) {
-        if (events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION)) {
-            Log.i(TAG, "onEvents: ${player} ${crossfadePlayer} ${mainPlayer}")
-            val mediaItem = mainPlayer.currentMediaItem
-            _mediaName.value = mediaItem?.mediaId
-            _mediaPlaylist.value = mediaItem?.mediaMetadata?.title
-
-        }
+    private fun setStrings(mediaItem: MediaItem?) {
+        _mediaName.value = mediaItem?.mediaId
+        _mediaPlaylist.value = mediaItem?.mediaMetadata?.title
     }
 
-//    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-//        if (mediaItem == null)
-//            return
-//        if (mediaItem.)
-//        super.onMediaItemTransition(mediaItem, reason)
-//    }
+    private fun rotatePlayer() {
+        val oldCrossfade = crossfadePlayer
+        crossfadePlayer = mainPlayer
+        mainPlayer = oldCrossfade
+        crossfadePlayer.next()
+        crossfadePlayer.pause()
+    }
+
+
+    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+        setStrings(mainPlayer.currentMediaItem)
+        if (reason == ExoPlayer.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED)
+            return
+        if (reason==ExoPlayer.MEDIA_ITEM_TRANSITION_REASON_AUTO)
+            rotatePlayer()
+        super.onMediaItemTransition(mediaItem, reason)
+    }
 
     fun update(musicInfos: List<PlayerViewModel.MusicInfo>) {
-        for (musicInfo in musicInfos)
-            Log.i(TAG, "update: ${musicInfo}")
         stop()
         this.musicInfos = musicInfos
         generatePlayer(musicInfos)
@@ -78,12 +74,12 @@ class CrossfadePlayer(val coroutineScope: CoroutineScope,val context: Context, v
         val mediaItemList = mutableListOf<MediaItem>()
         for (musicInfo: PlayerViewModel.MusicInfo in musicInfos) {
             val mediaItem: MediaItem =
-                    MediaItem.Builder().setUri(cacheDir + "/" + musicInfo.fileName)
-                            .setMediaId(musicInfo.fileName)
-                            .setMediaMetadata(
-                                    MediaMetadata.Builder().setTitle(musicInfo.playlistName).build()
-                            )
-                            .build()
+                MediaItem.Builder().setUri(cacheDir + "/" + musicInfo.fileName)
+                    .setMediaId(musicInfo.fileName)
+                    .setMediaMetadata(
+                        MediaMetadata.Builder().setTitle(musicInfo.playlistName).build()
+                    )
+                    .build()
             mediaItemList.add(mediaItem)
             mainPlayer.addMediaItem(mediaItem)
             mainPlayer.prepare()
@@ -102,8 +98,7 @@ class CrossfadePlayer(val coroutineScope: CoroutineScope,val context: Context, v
             crossfadePlayer.pause()
             crossfadePlayer.next()
 
-            //mainHandler?.removeCallbacksAndMessages(null)
-
+            mainHandler?.removeCallbacksAndMessages(null)
             Log.i(TAG, "Pause: ${mainPlayer.isPlaying}")
             return false
         } else {
@@ -113,52 +108,43 @@ class CrossfadePlayer(val coroutineScope: CoroutineScope,val context: Context, v
         }
     }
 
-    //var mainHandler: Handler? = null
+    var mainHandler: Handler? = null
+    private fun playCrossfade() {
+        if (!crossfadePlayer.isPlaying) {
+            crossfadePlayer.prepare()
+            crossfadePlayer.play()
+        }
+    }
+
+    private fun setVolume(mSound: Float) {
+
+        crossfadePlayer.volume = mSound
+        mainPlayer.volume = 1.0f - mSound
+    }
+
     private fun play() {
         mainPlayer.play()
-
-        timer = fixedRateTimer("CrossfadeUpdateTimer", true, 0, 10) {
-            val length = mainPlayer.contentDuration
-            val toEnd = length - mainPlayer.contentPosition
-
-                if (toEnd < 5000) {
-                    if (!crossfadePlayer.isPlaying) {
-                        crossfadePlayer.prepare()
-                        crossfadePlayer.play()
+        mainHandler = Handler(Looper.getMainLooper())
+        mainHandler?.post(object : Runnable {
+            override fun run() {
+                val length = mainPlayer.contentDuration
+                val toEnd = length - mainPlayer.contentPosition
+                synchronized(this) {
+                    if (toEnd < 5000) {
+                        playCrossfade()
+                        setVolume((1.0f - (toEnd.toFloat() / (5000))))
                     }
-                    val mSound: Float = (1.0f - (toEnd.toFloat() / (5000)))
-                    crossfadePlayer.volume = mSound
-                    mainPlayer.volume = 1.0f - mSound
                 }
 
-                if (toEnd < 500) {
-                    val oldCrossfade = crossfadePlayer
-                    crossfadePlayer = mainPlayer
-                    mainPlayer = oldCrossfade
-                    crossfadePlayer.next()
-                    crossfadePlayer.next()
-                    crossfadePlayer.pause()
-                }
-
-
-                //mainHandler?.postDelayed(this, 50)
-
-        }
-
-
-        //mainHandler = Handler(Looper.getMainLooper())
-
-//        mainHandler?.post(object : Runnable {
-//            override fun run() {
-//
-//
-//            }
-//        })
+                mainHandler?.postDelayed(this, 200)
+            }
+        })
 
 
     }
 
     fun stop() {
+        mainHandler?.removeCallbacksAndMessages(null)
         mainPlayer.pause()
         mainPlayer.stop()
         crossfadePlayer.pause()
@@ -167,9 +153,6 @@ class CrossfadePlayer(val coroutineScope: CoroutineScope,val context: Context, v
         mainPlayer.volume = 1f
         mainPlayer.clearMediaItems()
         crossfadePlayer.clearMediaItems()
-        timer?.purge()
-        timer?.cancel()
-        //mainHandler?.removeCallbacksAndMessages(null)
     }
 
 
