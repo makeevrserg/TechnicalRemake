@@ -28,13 +28,10 @@ class JsonParseClasses {
         val random: Boolean,
         val files: MutableList<ProfileFile>
     ) {
-        public fun getFileIndexById(id: Long): Int? {
-            var i = 0
-            for (file in files) {
+        fun getFileIndexById(id: Long): Int? {
+            for ((i, file) in files.withIndex())
                 if (file.id == id)
                     return i
-                i++
-            }
             return null
         }
     }
@@ -69,26 +66,9 @@ class JsonParseClasses {
         val isBroken: Boolean = true,
         val showDay: Boolean = true
     ) {
-        public fun getProportion(): String {
+        fun getProportion(): String {
             return playlistProportion.toString()
         }
-
-        constructor(
-            d: TempProfileDay,
-            t: TempProfileTimezone,
-            p: TempPlaylistsTimezone,
-            playlistName: String
-        ) : this(
-            0L,
-            d.day,
-            t.from,
-            t.to,
-            p.playlist_id,
-            p.proportion,
-            playlistName,
-            false,
-            true
-        )
 
         constructor(
             d: String,
@@ -118,11 +98,9 @@ class JsonParseClasses {
 
     @Entity(tableName = "profile")
     data class Profile(
-        @PrimaryKey(autoGenerate = false)
-        public val id: Int,
-        public val name: String,
-
-        public val schedule: ProfileSchedule
+        @PrimaryKey(autoGenerate = false) val id: Int,
+        val name: String,
+        val schedule: ProfileSchedule
     ) {
         fun initAdvancedProfile() {
             fun showDay(days: List<AdvancedDay>, day: String): Boolean {
@@ -136,18 +114,16 @@ class JsonParseClasses {
             for (d in schedule.days) {
                 if (d.timeZones.isEmpty())
                     days.add(AdvancedDay(day = dict[d.day] ?: continue))
-                for (t in d.timeZones) {
+                for (t in d.timeZones)
                     for (p in t.playlists)
                         days.add(
                             AdvancedDay(
-                                dict[d.day] ?: continue,
-                                t,
-                                p,
+                                dict[d.day] ?: continue, t, p,
                                 getPlaylistByPlaylistID(p.playlist_id)?.name ?: continue,
-                                showDay(days, d.day)
+                                showDay(days, dict[d.day] ?: continue)
                             )
                         )
-                }
+
             }
             schedule.advancedDays = days
         }
@@ -163,26 +139,19 @@ class JsonParseClasses {
             return list
         }
 
-        fun getPlaylistByPlaylistID(id: Long): ProfilePlaylist? {
+        private fun getPlaylistByPlaylistID(id: Long): ProfilePlaylist? {
             for (p in schedule.playlists)
                 if (p.id == id)
                     return p
             return null
         }
 
-        fun getFilesBytPlaylistID(id: Long): MutableList<ProfileFile> {
-            val list = mutableListOf<ProfileFile>()
-            for (playlist in schedule.playlists)
-                if (playlist.id == id)
-                    list.addAll(playlist.files)
-            return list
-        }
-
-        fun setBrokenFile(file: ProfileFile) {
-            for (playlsit in schedule.playlists) {
-                val index = playlsit.getFileIndexById(file.id)?:continue
-                playlsit.files[index] = file
+        fun setBrokenFile(file: ProfileFile): Profile {
+            for (playlist in schedule.playlists) {
+                val index = playlist.getFileIndexById(file.id) ?: continue
+                playlist.files[index] = file
             }
+            return this
         }
 
         fun getAllFiles(): List<ProfileFile> {
@@ -194,26 +163,36 @@ class JsonParseClasses {
             return map.values.toList()
         }
 
+        //Время 00:00 и 0:00 не сравнивается друг с другом
         private fun String.fixTime(): String {
             if (this.length < 5)
                 return "0$this"
             return this
         }
 
-        fun getProportionMapByTime(time: String): MutableMap<Long, Int> {
+        private fun Map<Long,Int>.sortAndReverse(): Map<Long, Int> {
+            this.toList().sortedBy { (_,v)->v }.toMap()
+            this.entries.associateBy ({it.value}){it.key}
+            return this
+        }
+        fun getProportionMapByTime(time: String): Map<Long, Int> {
             val proportions = mutableMapOf<Long, Int>()
 
             for (p in schedule.advancedDays)
                 if (time > p.from.fixTime() && time < p.to.fixTime() && p.day == getCurrentDay())
-                    proportions[p.playlistId] = p.playlistProportion
-            return proportions
+                    if (!proportions.containsKey(p.playlistId))
+                        proportions[p.playlistId] = p.playlistProportion
+                    else
+                        proportions[p.playlistId] = p.playlistProportion+ proportions[p.playlistId]!!
+
+            return proportions.sortAndReverse()
 
         }
 
         fun getFilesByTime(time: String): Map<String, List<ProfileFile>> {
             val proportions = getProportionMapByTime(time)
 
-            val filesByPlaylistName = mutableMapOf<String,List<ProfileFile>>()
+            val filesByPlaylistName = mutableMapOf<String, List<ProfileFile>>()
             for (playlistID in proportions.keys) {
                 val playlist = getPlaylistByPlaylistID(playlistID) ?: continue
                 val fileList = mutableListOf<ProfileFile>()
@@ -224,7 +203,8 @@ class JsonParseClasses {
                     } while (file.isBroken)
                     fileList.add(file)
                 }
-                filesByPlaylistName[getPlaylistByPlaylistID(playlistID)?.name?:continue] = fileList
+                filesByPlaylistName[getPlaylistByPlaylistID(playlistID)?.name ?: continue] =
+                    fileList
             }
             return filesByPlaylistName
 

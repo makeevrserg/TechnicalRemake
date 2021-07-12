@@ -23,7 +23,7 @@ interface DatabaseDao {
     @Query("SELECT * FROM files WHERE id=:key")
     suspend fun getFile(key: Long): ProfileFile?
     @Query("SELECT * FROM files ")
-    suspend fun getFiles(): List<ProfileFile>
+    suspend fun getAllFiles(): List<ProfileFile>
     @Query("SELECT file_name from files WHERE id=:key and isBroken=0")
     suspend fun getFileName(key: Long): String
 
