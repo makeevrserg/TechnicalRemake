@@ -14,8 +14,8 @@ import java.util.*
 import kotlin.concurrent.fixedRateTimer
 
 class PlayerViewModel(
-        val database: DatabaseDao,
-        application: Application
+    val database: DatabaseDao,
+    application: Application
 ) : AndroidViewModel(application) {
 
 
@@ -41,23 +41,24 @@ class PlayerViewModel(
     val musicName: LiveData<String>
         get() = crossfadePlayer.mediaName
 
-    val TAG = "PlayerViewModel"
+    private val TAG = "PlayerViewModel"
 
 
     private val cacheDir: File = application.cacheDir
     private var crossfadePlayer: CrossfadePlayer =
-            CrossfadePlayer(application.applicationContext, cacheDir.path)
+        CrossfadePlayer(application.applicationContext, cacheDir.path)
 
-    var timer: Timer
+    private var timer: Timer
+
     init {
         //Ставим таймер чтобы он чекал на обновление времени
         timer = fixedRateTimer("MusicUpdateTimer", true, 0, 5000) {
             Log.i(TAG, "Timer Checking: ")
-           loadData()
+            loadData()
         }
     }
 
-    var oldPlaylistMap: MutableMap<Long, Int>? = null
+    private var oldPlaylistMap: Map<Long, Int>? = null
 
 
     private fun loadData() {
@@ -66,6 +67,7 @@ class PlayerViewModel(
             profile.schedule.advancedDays = database.getAdvancedDays()
 
             val proportionMap = profile.getProportionMapByTime(Util.getCurrentTime())
+
 
 
             //Мы не должны быть в этом фрагменте если нет музыки
@@ -77,8 +79,8 @@ class PlayerViewModel(
             }
             if (oldPlaylistMap == proportionMap)
                 return@launch
-             else
-                oldPlaylistMap = proportionMap
+
+            oldPlaylistMap = proportionMap
 
             val fileByPlaylistID = profile.getFilesByTime(Util.getCurrentTime())
             if (fileByPlaylistID.isEmpty()) {
@@ -91,15 +93,18 @@ class PlayerViewModel(
             _isPlaying.postValue(false)
         }
     }
+
     fun playButtonOnClick() {
         _isPlaying.value = crossfadePlayer.onPlayPressed()
     }
+
     override fun onCleared() {
         crossfadePlayer.stop()
         timer.purge()
         timer.cancel()
         super.onCleared()
     }
+
     fun doneShowingSnackBar() {
         _isUpdated.value = false
     }

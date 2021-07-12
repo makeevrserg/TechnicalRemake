@@ -10,9 +10,10 @@ import com.makeevrserg.technicalremake.databinding.ListProfileBinding
 import com.makeevrserg.technicalremake.scheduler.JsonParseClasses.AdvancedDay
 
 
-class RecAdapter(private val clickListener: TimeZoneListener) : ListAdapter<AdvancedDay, RecAdapter.ViewHolder>(
-    TimeZoneDiffCallback()
-) {
+class RecAdapter(private val clickListener: TimeZoneListener) :
+    ListAdapter<AdvancedDay, RecAdapter.ViewHolder>(
+        TimeZoneDiffCallback()
+    ) {
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = getItem(position)
@@ -60,7 +61,7 @@ class RecAdapter(private val clickListener: TimeZoneListener) : ListAdapter<Adva
 
 }
 
-class TimeZoneListener(val clickListener: (timeZone: AdvancedDay, view: View) -> Unit){
+class TimeZoneListener(val clickListener: (timeZone: AdvancedDay, view: View) -> Unit) {
     fun onClick(timeZone: AdvancedDay, view: View) = clickListener(timeZone, view)
 
 }

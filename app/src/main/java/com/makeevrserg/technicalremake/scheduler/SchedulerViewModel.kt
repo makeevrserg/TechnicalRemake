@@ -1,13 +1,11 @@
 package com.makeevrserg.technicalremake.scheduler
 
 import android.app.Application
-import android.view.View
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
-import com.makeevrserg.technicalremake.R
 import com.makeevrserg.technicalremake.Util
 import com.makeevrserg.technicalremake.database.*
 import kotlinx.coroutines.Dispatchers
@@ -27,7 +25,7 @@ class SchedulerViewModel(
 ) : AndroidViewModel(application) {
 
     private val TAG = "SchedulerViewModel"
-    val _URL = "https://empireprojekt.ru/test.json"
+    private val _URL = "https://empireprojekt.ru/test.json"
     private var _isLoading = MutableLiveData(true)
     val isLoading: LiveData<Boolean>
         get() = _isLoading
@@ -44,11 +42,12 @@ class SchedulerViewModel(
     val timeZones: LiveData<List<AdvancedDay>>
         get() = _timeZones
 
-    private var _fileLoading = MutableLiveData("")
-    public val fileLoading: LiveData<String>
+    private var _fileLoading = MutableLiveData("Получение списка файлов...")
+    val fileLoading: LiveData<String>
         get() = _fileLoading
 
     private val cacheDir: File = application.cacheDir
+
 
     init {
         initDatabase()
@@ -92,16 +91,16 @@ class SchedulerViewModel(
 
     private fun initDatabase() {
         viewModelScope.launch {
-            CreateDatabase()
+            createDatabase()
         }
     }
 
 
     //Парсинг json и создание БД
-    private suspend fun CreateDatabase() {
+    private suspend fun createDatabase() {
         withContext(Dispatchers.IO) {
             try {
-                val jsonStr: JSONObject = JSONObject(URL(_URL).readText())
+                val jsonStr = JSONObject(URL(_URL).readText())
                 val profile =
                     Gson().fromJson(jsonStr.toString(), Profile::class.java)
                 profile.initAdvancedProfile()
@@ -126,24 +125,24 @@ class SchedulerViewModel(
 
 
 
+
     //При нажатии на элемент recyclerView меняем пропорцию
-    suspend fun onProportionChanged(advancedDay: AdvancedDay, k: Int) {
+    private suspend fun onProportionChanged(advancedDay: AdvancedDay, k: Int) {
         withContext(Dispatchers.IO) {
-            advancedDay.playlistProportion+=k
-            if (advancedDay.playlistProportion<1)
+            advancedDay.playlistProportion += k
+            if (advancedDay.playlistProportion < 1)
                 advancedDay.playlistProportion = 1
             database.updateAdvancedDay(advancedDay)
+            _timeZones.value?:return@withContext
             _timeZones = database.getAdvancedDayLiveData()
 
         }
     }
+
     fun callOnProportionChanged(advancedDay: AdvancedDay, k: Int) {
         viewModelScope.launch {
-            onProportionChanged(advancedDay,k)
+            onProportionChanged(advancedDay, k)
         }
     }
 
-    override fun onCleared() {
-        super.onCleared()
-    }
 }

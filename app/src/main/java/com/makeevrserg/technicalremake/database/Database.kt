@@ -6,7 +6,7 @@ import androidx.room.Database
 import com.makeevrserg.technicalremake.scheduler.JsonParseClasses
 
 @Database(entities = [JsonParseClasses.ProfileFile::class, JsonParseClasses.Profile::class, JsonParseClasses.AdvancedDay::class], version = 14, exportSchema = false)
-@TypeConverters(Conventer::class)
+@TypeConverters(Converter::class)
 abstract class Database : RoomDatabase() {
     abstract val databaseDao: DatabaseDao
 

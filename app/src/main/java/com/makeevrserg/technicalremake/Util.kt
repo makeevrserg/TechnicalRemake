@@ -9,15 +9,15 @@ import java.security.MessageDigest
 import java.text.SimpleDateFormat
 import java.util.*
 
-public class Util {
+class Util {
     companion object {
-        fun getFileChecksum(fileName: String): String {
+        private fun getFileChecksum(fileName: String): String {
 
             val digest = MessageDigest.getInstance("MD5")
-            val file: File = File(fileName)
+            val file = File(fileName)
             val size: Int = file.length().toInt()
-            var bytes: ByteArray = ByteArray(size)
-            val biStream: BufferedInputStream = BufferedInputStream(FileInputStream(file))
+            var bytes = ByteArray(size)
+            val biStream = BufferedInputStream(FileInputStream(file))
             biStream.read(bytes, 0, bytes.size)
             biStream.close()
             digest.update(bytes)
@@ -30,7 +30,7 @@ public class Util {
 
         fun download(cacheDir: File, file: JsonParseClasses.ProfileFile): Boolean {
 
-            val url: URL = URL(file.file_name)
+            val url = URL(file.file_name)
             val connection: HttpURLConnection = url.openConnection() as HttpURLConnection
             connection.connect()
 
@@ -40,9 +40,9 @@ public class Util {
             val iStream: InputStream = BufferedInputStream(url.openStream(), fileLength)
             val oStream: OutputStream =
                 FileOutputStream(cacheDir.path + "/" + file.name)
-            val data: ByteArray =
+            val data =
                 ByteArray(1024)
-            var count = iStream.read(data);
+            var count = iStream.read(data)
             while (count != -1) {
                 oStream.write(data, 0, count)
                 count = iStream.read(data)
@@ -53,7 +53,7 @@ public class Util {
             connection.inputStream.close()
 
             connection.disconnect()
-            return (Util.getFileChecksum(cacheDir.path + "/" + file.name) != file.md5_file)
+            return (getFileChecksum(cacheDir.path + "/" + file.name) != file.md5_file)
         }
         val dict = mapOf(
             "monday" to "Понедельник",
@@ -66,7 +66,9 @@ public class Util {
         )
 
         fun getCurrentDay():String{
-            val day = SimpleDateFormat("EEEE", Locale.ENGLISH).format(Calendar.getInstance().getTime().time).toLowerCase()
+            val day = SimpleDateFormat("EEEE", Locale.ENGLISH).format(Calendar.getInstance().time.time).toLowerCase(
+                Locale.getDefault()
+            )
             return dict[day]!!
         }
         fun getCurrentTime():String{

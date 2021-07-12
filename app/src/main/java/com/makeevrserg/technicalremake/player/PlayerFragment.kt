@@ -5,14 +5,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.makeevrserg.technicalremake.R
 import com.makeevrserg.technicalremake.database.Database
@@ -29,7 +24,7 @@ class PlayerFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
 
         val binding: PlayerFragmentBinding = DataBindingUtil.inflate(
             inflater,
@@ -46,7 +41,7 @@ class PlayerFragment : Fragment() {
             ).get(PlayerViewModel::class.java)
 
         //в ViewModel есть таймер, который проверят фиксированное время обновление времени
-        viewModel.isUpdated.observe(viewLifecycleOwner, Observer {
+        viewModel.isUpdated.observe(viewLifecycleOwner, {
             if (it==true){
                 Snackbar.make(
                    requireActivity().findViewById(android.R.id.content),"Музыка обновлена",Snackbar.LENGTH_SHORT
@@ -55,7 +50,7 @@ class PlayerFragment : Fragment() {
             }
         })
         //Если нет доступной музыки
-        viewModel.isEmpty.observe(viewLifecycleOwner, Observer {
+        viewModel.isEmpty.observe(viewLifecycleOwner, {
             if (it == true) {
                 Toast.makeText(context, "Нет доступной музыки", Toast.LENGTH_SHORT).show()
                 activity?.finish()
