@@ -44,7 +44,14 @@ class SchedulerFragment : Fragment() {
 
         //RecyclerView
         val adapter = RecAdapter(TimeZoneListener { timeZone, view ->
-            viewModel.onTimeZoneClicked(timeZone, view)
+            when (view.id) {
+                R.id.imageViewAdd -> {
+                    viewModel.callOnProportionChanged(timeZone, 1)
+                }
+                R.id.imageViewSub -> {
+                    viewModel.callOnProportionChanged(timeZone, -1)
+                }
+            }
         })
         binding.recyclerView.adapter = adapter
         viewModel.timeZones.observe(viewLifecycleOwner, {

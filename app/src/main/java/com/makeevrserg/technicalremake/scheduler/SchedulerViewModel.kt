@@ -19,6 +19,7 @@ import java.net.ConnectException
 import java.net.URL
 import java.net.UnknownHostException
 import javax.net.ssl.SSLHandshakeException
+import com.makeevrserg.technicalremake.scheduler.JsonParseClasses.*
 
 class SchedulerViewModel(
     val database: DatabaseDao,
@@ -40,7 +41,7 @@ class SchedulerViewModel(
         get() = _connected
 
     private var _timeZones = database.getAdvancedDayLiveData()
-    val timeZones: LiveData<List<JsonParseClasses.AdvancedDay>>
+    val timeZones: LiveData<List<AdvancedDay>>
         get() = _timeZones
 
     private var _fileLoading = MutableLiveData("")
@@ -57,7 +58,7 @@ class SchedulerViewModel(
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 val profile = database.getProfile()
-                for (file: JsonParseClasses.ProfileFile in database.getFiles()) {
+                for (file: ProfileFile in database.getAllFiles()) {
                     try {
                         _fileLoading.postValue(file.name)
                         file.isBroken = Util.download(cacheDir, file)
@@ -102,7 +103,7 @@ class SchedulerViewModel(
             try {
                 val jsonStr: JSONObject = JSONObject(URL(_URL).readText())
                 val profile =
-                    Gson().fromJson(jsonStr.toString(), JsonParseClasses.Profile::class.java)
+                    Gson().fromJson(jsonStr.toString(), Profile::class.java)
                 profile.initAdvancedProfile()
                 //Берем название профила и ставим его для отображения
                 _profileName.postValue(profile.name)
@@ -112,6 +113,7 @@ class SchedulerViewModel(
                 database.insertProfile(profile)
                 //Таблица времени
                 database.insertAdvancedDay(profile.schedule.advancedDays)
+                //Скачиваем
                 downloadFiles(cacheDir)
             } catch (e: UnknownHostException) {
                 //Если нет соединения
@@ -125,7 +127,7 @@ class SchedulerViewModel(
 
 
     //При нажатии на элемент recyclerView меняем пропорцию
-    private suspend fun onProportionChanged(advancedDay: JsonParseClasses.AdvancedDay, k: Int) {
+    suspend fun onProportionChanged(advancedDay: AdvancedDay, k: Int) {
         withContext(Dispatchers.IO) {
             advancedDay.playlistProportion+=k
             if (advancedDay.playlistProportion<1)
@@ -135,19 +137,12 @@ class SchedulerViewModel(
 
         }
     }
-
-    fun onTimeZoneClicked(timeZone: JsonParseClasses.AdvancedDay, view: View) {
+    fun callOnProportionChanged(advancedDay: AdvancedDay, k: Int) {
         viewModelScope.launch {
-            when (view.id) {
-                R.id.imageViewAdd -> {
-                    onProportionChanged(timeZone, 1)
-                }
-                R.id.imageViewSub -> {
-                    onProportionChanged(timeZone, -1)
-                }
-            }
+            onProportionChanged(advancedDay,k)
         }
     }
+
     override fun onCleared() {
         super.onCleared()
     }
