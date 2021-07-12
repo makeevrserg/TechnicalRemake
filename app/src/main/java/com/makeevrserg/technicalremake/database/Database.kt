@@ -1,11 +1,12 @@
 package com.makeevrserg.technicalremake.database
 
 import android.content.Context
+import androidx.room.*
 import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
+import com.makeevrserg.technicalremake.scheduler.JsonParseClasses
 
-@Database(entities = [TimeZoneScheduler::class, FileDatabase::class, PlayList::class], version = 14, exportSchema = false)
+@Database(entities = [JsonParseClasses.ProfileFile::class, JsonParseClasses.Profile::class, JsonParseClasses.AdvancedDay::class], version = 14, exportSchema = false)
+@TypeConverters(Conventer::class)
 abstract class Database : RoomDatabase() {
     abstract val databaseDao: DatabaseDao
 

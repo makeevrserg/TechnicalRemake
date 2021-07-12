@@ -74,6 +74,6 @@ dependencies {
     implementation "android.arch.navigation:navigation-ui-ktx:$version_navigation"
 
 
-    implementation 'com.google.android.exoplayer:exoplayer:2.13.2'
+    implementation 'com.google.android.exoplayer:exoplayer:2.14.1'
     implementation 'com.google.code.gson:gson:2.8.6'
 }

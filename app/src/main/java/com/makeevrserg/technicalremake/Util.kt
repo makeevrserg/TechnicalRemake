@@ -1,12 +1,10 @@
 package com.makeevrserg.technicalremake
 
 import android.util.Log
-import com.makeevrserg.technicalremake.database.FileDatabase
+import com.makeevrserg.technicalremake.scheduler.JsonParseClasses
 import java.io.*
-import java.net.ConnectException
 import java.net.HttpURLConnection
 import java.net.URL
-import java.net.URLConnection
 import java.security.MessageDigest
 import java.text.SimpleDateFormat
 import java.util.*
@@ -30,7 +28,7 @@ public class Util {
             return sb.toString()
         }
 
-        fun download(cacheDir: File, file: FileDatabase): Boolean {
+        fun download(cacheDir: File, file: JsonParseClasses.ProfileFile): Boolean {
 
             val url: URL = URL(file.file_name)
             val connection: HttpURLConnection = url.openConnection() as HttpURLConnection

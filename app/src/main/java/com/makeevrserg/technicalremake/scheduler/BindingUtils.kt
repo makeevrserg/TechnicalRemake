@@ -1,18 +1,18 @@
 package com.makeevrserg.technicalremake.scheduler
 
 import android.view.View
+import android.widget.Advanceable
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import com.makeevrserg.technicalremake.R
-import com.makeevrserg.technicalremake.database.TimeZoneScheduler
 
 
 
 //в RecyclerView ставит сломанную картинку если в плейлисте есть не прошедшие md5 файлы
 @BindingAdapter("brokenImage")
-fun ImageView.setBrokenImage(item: TimeZoneScheduler?) {
+fun ImageView.setBrokenImage(item: JsonParseClasses.AdvancedDay?) {
     item?.let {
         setImageResource(
             if (item.isBroken)
@@ -26,9 +26,9 @@ fun ImageView.setBrokenImage(item: TimeZoneScheduler?) {
 
 //Костыль для RecyclerView. Если proportion==null значит день пустой
 @BindingAdapter("setDay")
-fun LinearLayout.setDay(item: TimeZoneScheduler?) {
+fun LinearLayout.setDay(item: JsonParseClasses.AdvancedDay?) {
     item?.let {
-        visibility = if (item.proportion == null)
+        visibility = if (item.playlistProportion == null)
             View.GONE
         else
             View.VISIBLE
@@ -36,12 +36,12 @@ fun LinearLayout.setDay(item: TimeZoneScheduler?) {
 }
 
 @BindingAdapter("setProportion")
-fun TextView.setProportion(item: TimeZoneScheduler?) {
+fun TextView.setProportion(item: JsonParseClasses.AdvancedDay?) {
     item?.let {
-        text = if (item.proportion == null)
+        text = if (item.playlistProportion == null)
             "0"
         else
-            item.proportion.toString()
+            item.playlistProportion.toString()
     }
 }
 

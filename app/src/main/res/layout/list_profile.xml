@@ -8,8 +8,8 @@
         <import type="android.view.View" />
 
         <variable
-            name="timeZone"
-            type="com.makeevrserg.technicalremake.database.TimeZoneScheduler" />
+            name="advancedDay"
+            type="com.makeevrserg.technicalremake.scheduler.JsonParseClasses.AdvancedDay" />
 
         <variable
             name="clickListener"
@@ -25,7 +25,7 @@
             android:id="@+id/textViewDay"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@{timeZone.day}"
+            android:text="@{advancedDay.day}"
             android:textColor="@color/black"
             android:textSize="20sp"
             android:textStyle="bold"
@@ -42,28 +42,23 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textViewDay"
-            app:setDay="@{timeZone}">
+            android:visibility='@{(advancedDay.playlistProportion==-1)?View.GONE:View.VISIBLE}'>
+
+<!--            app:setDay="@{advancedDay}"-->
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:src="@drawable/ic_check"
-                android:textAlignment="center"
-                app:brokenImage="@{timeZone}" />
+                android:src="@{(!advancedDay.broken)?@drawable/ic_check:@drawable/ic_warn}"
+                android:textAlignment="center"/>
 
-            <!--            <ImageView-->
-            <!--                android:layout_width="wrap_content"-->
-            <!--                android:layout_height="match_parent"-->
-            <!--                android:src="@drawable/ic_warn"-->
-            <!--                android:textAlignment="center"-->
-            <!--                android:visibility="@{timeZone.broken?View.VISIBLE:View.GONE}" />-->
 
             <TextView
                 android:id="@+id/textViewTimeFrom"
                 android:layout_width="150dp"
                 android:layout_height="match_parent"
                 android:layout_marginHorizontal="10sp"
-                android:text='@{timeZone.from+"-"+timeZone.to}'
+                android:text='@{advancedDay.from+"-"+advancedDay.to}'
                 android:textAlignment="textStart"
                 android:textColor="@color/black"
                 android:textSize="20sp" />
@@ -75,7 +70,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:textSize="20sp"
-                android:text="@{String.valueOf(timeZone.playlistName)}"
+                android:text="@{String.valueOf(advancedDay.playlistName)}"
                 android:textAlignment="textStart" />
 
 
@@ -83,7 +78,7 @@
                 android:id="@+id/imageViewSub"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:onClick="@{(v)->clickListener.onClick(timeZone,v)}"
+                android:onClick="@{(v)->clickListener.onClick(advancedDay,v)}"
                 android:src="@drawable/ic_sub"
                 android:textAlignment="center" />
 
@@ -93,16 +88,16 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="10sp"
-                app:setProportion="@{timeZone}"
                 android:textAlignment="center"
                 android:textColor="@color/black"
+                android:text="@{advancedDay.proportion}"
                 android:textSize="20sp" />
 
             <ImageView
                 android:id="@+id/imageViewAdd"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:onClick="@{(v)->clickListener.onClick(timeZone,v)}"
+                android:onClick="@{(v)->clickListener.onClick(advancedDay,v)}"
                 android:src="@drawable/ic_add"
                 android:textAlignment="center" />
 
@@ -111,10 +106,4 @@
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-</layout><!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
-    <!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
-    <!--    xmlns:tools="http://schemas.android.com/tools"-->
-    <!--    android:layout_width="wrap_content"-->
-    <!--    android:layout_height="wrap_content">-->
-
-    <!--</LinearLayout>-->
+</layout>

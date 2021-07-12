@@ -8,22 +8,15 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.makeevrserg.technicalremake.database.TimeZoneScheduler
 import com.makeevrserg.technicalremake.databinding.ListProfileBinding
 
 
-class RecAdapter(val clickListener: TimeZoneListener) : ListAdapter<TimeZoneScheduler, RecAdapter.ViewHolder>(
+class RecAdapter(private val clickListener: TimeZoneListener) : ListAdapter<JsonParseClasses.AdvancedDay, RecAdapter.ViewHolder>(
     TimeZoneDiffCallback()
 ) {
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = getItem(position)
-        //Костыль для отображения дней. Если новый день = старому значит не отображаем этот элемент
-        if (position != 0 && getItem(position - 1).day == getItem(position).day)
-            holder.binding.textViewDay.visibility = View.GONE
-        else
-            holder.binding.textViewDay.visibility = View.VISIBLE
-
         holder.bind(item, clickListener)
     }
 
@@ -34,8 +27,8 @@ class RecAdapter(val clickListener: TimeZoneListener) : ListAdapter<TimeZoneSche
 
     class ViewHolder private constructor(val binding: ListProfileBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: TimeZoneScheduler, clickListener: TimeZoneListener) {
-            binding.timeZone = item
+        fun bind(item: JsonParseClasses.AdvancedDay, clickListener: TimeZoneListener) {
+            binding.advancedDay = item
             binding.clickListener = clickListener
             binding.executePendingBindings()
         }
@@ -49,17 +42,17 @@ class RecAdapter(val clickListener: TimeZoneListener) : ListAdapter<TimeZoneSche
         }
     }
     //Возможно не стоило это использовать потому что в areContentsTheSame он возвращает корректно только на каждый второй вызов функции
-    class TimeZoneDiffCallback : DiffUtil.ItemCallback<TimeZoneScheduler>() {
+    class TimeZoneDiffCallback : DiffUtil.ItemCallback<JsonParseClasses.AdvancedDay>() {
         override fun areItemsTheSame(
-            oldItem: TimeZoneScheduler,
-            newItem: TimeZoneScheduler
+            oldItem: JsonParseClasses.AdvancedDay,
+            newItem: JsonParseClasses.AdvancedDay
         ): Boolean {
-            return oldItem.timeZoneId == newItem.timeZoneId
+            return oldItem.playlistId == newItem.playlistId
         }
 
         override fun areContentsTheSame(
-            oldItem: TimeZoneScheduler,
-            newItem: TimeZoneScheduler
+            oldItem: JsonParseClasses.AdvancedDay,
+            newItem: JsonParseClasses.AdvancedDay
         ): Boolean {
 
             return false
@@ -69,7 +62,7 @@ class RecAdapter(val clickListener: TimeZoneListener) : ListAdapter<TimeZoneSche
 
 }
 
-class TimeZoneListener(val clickListener: (timeZone: TimeZoneScheduler, view: View) -> Unit){
-    fun onClick(timeZone: TimeZoneScheduler, view: View) = clickListener(timeZone, view)
+class TimeZoneListener(val clickListener: (timeZone: JsonParseClasses.AdvancedDay, view: View) -> Unit){
+    fun onClick(timeZone: JsonParseClasses.AdvancedDay, view: View) = clickListener(timeZone, view)
 
 }

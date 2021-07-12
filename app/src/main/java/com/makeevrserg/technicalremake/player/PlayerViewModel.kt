@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.makeevrserg.technicalremake.Util
 import com.makeevrserg.technicalremake.database.*
+import com.makeevrserg.technicalremake.scheduler.JsonParseClasses
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -49,7 +50,7 @@ class PlayerViewModel(
 
     private val cacheDir: File = application.cacheDir
     private var crossfadePlayer: CrossfadePlayer =
-            CrossfadePlayer(viewModelScope,application.applicationContext, cacheDir.path)
+            CrossfadePlayer(application.applicationContext, cacheDir.path)
 
     lateinit var timer: Timer
 
@@ -57,39 +58,40 @@ class PlayerViewModel(
         //Ставим таймер чтобы он чекал на обновление времени
         timer = fixedRateTimer("MusicUpdateTimer", true, 0, 5000) {
             Log.i(TAG, "Timer Checking: ")
-            loadData()
+           loadData()
         }
 
     }
 
     var oldPlaylistMap: MutableMap<Long, Int>? = null
+
+
     private fun loadData() {
         viewModelScope.launch {
-            val playlistIds: List<TimeZoneScheduler> = getPlaylistsFromDatabase()
-            val playlistMap = mutableMapOf<Long, Int>()
+            val profile = database.getProfile()
 
 
-            for (timeZone: TimeZoneScheduler in playlistIds)
-                playlistMap[timeZone.playlistId!!] = timeZone.proportion!!
+            val proportionMap = profile.getProportionMapByTime(Util.getCurrentTime())
+
 
             //Мы не должны быть в этом фрагменте если нет музыки
-            if (playlistMap.isEmpty()) {
+            if (proportionMap.isEmpty()) {
                 _isEmpty.value = true
                 timer.purge()
                 timer.cancel()
                 return@launch
             }
-            if (oldPlaylistMap == playlistMap) {
+            if (oldPlaylistMap == proportionMap) {
                 return@launch
             } else
-                oldPlaylistMap = playlistMap
+                oldPlaylistMap = proportionMap
 
-            val musicInfos: List<MusicInfo> = getMusicFiles(playlistMap)
-            if (musicInfos.isEmpty()) {
+            val files = profile.getFilesByTime(Util.getCurrentTime())
+            if (files.isEmpty()) {
                 _isEmpty.postValue(true)
                 return@launch
             }
-            crossfadePlayer.update(musicInfos)
+            crossfadePlayer.update(files)
             _isLoading.postValue(false)
             _isUpdated.postValue(true)
             _isPlaying.postValue(false)
@@ -99,40 +101,7 @@ class PlayerViewModel(
 
     data class MusicInfo(val fileName: String, val playlistName: String)
 
-    private suspend fun getMusicFiles(playlistMap: Map<Long, Int>): List<MusicInfo> {
-        return withContext(Dispatchers.IO) {
-            val musicToPlay = mutableListOf<MusicInfo>()
 
-            for (playlistId in playlistMap.keys) {
-                val proportion: Int = playlistMap[playlistId]!!
-                val musicIds: Array<Long> = database.getMusicIdsByPlaylistId(playlistId)
-                val playlistName: String = database.getPlaylistNameByPlaylistId(playlistId)
-                if (musicIds.isEmpty()) {
-
-                    _isEmpty.postValue(true)
-                    return@withContext musicToPlay
-                }
-                for (i in 0 until proportion) {
-                    musicToPlay.add(
-                            MusicInfo(
-                                    database.getFileName(
-                                            musicIds[Random.nextInt(0, musicIds.size)]
-                                    ), playlistName
-                            )
-                    )
-
-                }
-            }
-            musicToPlay
-        }
-    }
-
-    private suspend fun getPlaylistsFromDatabase(): List<TimeZoneScheduler> {
-        return withContext(Dispatchers.IO) {
-            val db = database.getTimezonesByTime(Util.getCurrentDay(), Util.getCurrentTime())
-            db
-        }
-    }
 
     fun playButtonOnClick() {
         _isPlaying.value = crossfadePlayer.onPlayPressed()
