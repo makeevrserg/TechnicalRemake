@@ -32,12 +32,8 @@ class SchedulerFragment : Fragment() {
             container,
             false
         )
-
-
         val application = requireNotNull(this.activity).application
-
         val dataSource = Database.getInstance(application).databaseDao
-
         val viewModelFactory = SchedulerViewModelFactory(dataSource, application)
         val schedulerViewModel = ViewModelProvider(
             this, viewModelFactory
@@ -51,7 +47,7 @@ class SchedulerFragment : Fragment() {
             viewModel.onTimeZoneClicked(timeZone, view)
         })
         binding.recyclerView.adapter = adapter
-        viewModel.timeZones.observe(viewLifecycleOwner, Observer {
+        viewModel.timeZones.observe(viewLifecycleOwner, {
             it?.let {
                 adapter.submitList(it.toMutableList())
             }
@@ -68,7 +64,7 @@ class SchedulerFragment : Fragment() {
             }
         }
         //Проверка на соединение
-        viewModel.connected.observe(viewLifecycleOwner, Observer {
+        viewModel.connected.observe(viewLifecycleOwner, {
             if (it == false) {
                 Toast.makeText(context, "Нет соединения", Toast.LENGTH_SHORT).show()
                 activity?.finish()

@@ -7,7 +7,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.SimpleExoPlayer
-import com.makeevrserg.technicalremake.scheduler.JsonParseClasses
+import com.makeevrserg.technicalremake.scheduler.JsonParseClasses.*
 import java.util.*
 
 
@@ -18,7 +18,6 @@ class CrossfadePlayer(
     var crossfadePlayer: SimpleExoPlayer
     val TAG = "CrossfadePlayer"
 
-    var profileFiles: List<JsonParseClasses.ProfileFile>? = null
 
     private var _mediaName: MutableLiveData<String> = MutableLiveData("Загрузка...")
     public val mediaName: LiveData<String>
@@ -42,22 +41,25 @@ class CrossfadePlayer(
     }
 
     private fun ExoPlayer.initListener() {
+
         this.createMessage { _, _ ->
+            Log.d(TAG, "initListener: ${this} ${mainPlayer} ${crossfadePlayer}")
             manageSound()
             this.initListener()
         }
-            .setPosition(this.currentPosition + 100)
+            .setPosition(this.currentPosition+100)
             .setDeleteAfterDelivery(true)
             .setLooper(Looper.getMainLooper())
             .send()
     }
 
     fun manageSound() {
-        val toEnd = mainPlayer.contentDuration.minus(mainPlayer.contentPosition)
+        val length = mainPlayer.contentDuration
+        val toEnd = length - mainPlayer.contentPosition
 
         if (toEnd < 5000) {
             playCrossfade()
-            setVolume(1.0f.minus(toEnd.div(5000)))
+            setVolume((1.0f - (toEnd.toFloat() / (5000))))
         }
     }
 
@@ -68,11 +70,11 @@ class CrossfadePlayer(
 
     private fun rotatePlayer() {
         val oldCrossfade = crossfadePlayer
+        oldCrossfade.initListener()
         crossfadePlayer = mainPlayer
         mainPlayer = oldCrossfade
         crossfadePlayer.next()
         crossfadePlayer.pause()
-        mainPlayer.initListener()
     }
 
 
@@ -81,31 +83,33 @@ class CrossfadePlayer(
         setStrings(mainPlayer.currentMediaItem)
         if (reason == ExoPlayer.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED)
             return
-        else if (reason == ExoPlayer.MEDIA_ITEM_TRANSITION_REASON_AUTO || reason == ExoPlayer.MEDIA_ITEM_TRANSITION_REASON_REPEAT)
+        else if (reason == ExoPlayer.MEDIA_ITEM_TRANSITION_REASON_AUTO || reason==ExoPlayer.MEDIA_ITEM_TRANSITION_REASON_REPEAT)
             rotatePlayer()
 
     }
-
-    fun update(musicInfos: List<JsonParseClasses.ProfileFile>) {
+    fun update(filesByPlaylistID: Map<String, List<ProfileFile>>) {
         stop()
-        this.profileFiles = musicInfos
-        generatePlayer(musicInfos)
+        generatePlayer(filesByPlaylistID)
 
     }
+    private fun getMediaItem(file:ProfileFile,playlistName:String): MediaItem {
+        return MediaItem.Builder().setUri(cacheDir + "/" + file.name)
+            .setMediaId(file.name)
+            .setMediaMetadata(
+                MediaMetadata.Builder().setTitle(playlistName).build()
+            )
+            .build()
+    }
 
-    private fun generatePlayer(musicInfos: List<JsonParseClasses.ProfileFile>) {
+    private fun generatePlayer(filesByPlaylistID: Map<String,List<ProfileFile>>) {
         val mediaItemList = mutableListOf<MediaItem>()
-        for (profileFile in musicInfos) {
-            val mediaItem: MediaItem =
-                MediaItem.Builder().setUri(cacheDir + "/" + profileFile.name)
-                    .setMediaId(profileFile.name)
-                    .setMediaMetadata(
-                        MediaMetadata.Builder().setTitle("Playlist").build()
-                    )
-                    .build()
-            mediaItemList.add(mediaItem)
-            mainPlayer.addMediaItem(mediaItem)
-            mainPlayer.prepare()
+        for (playlistName in filesByPlaylistID.keys) {
+            for (file in filesByPlaylistID[playlistName]!!) {
+                val mediaItem: MediaItem = getMediaItem(file,playlistName)
+                mediaItemList.add(mediaItem)
+                mainPlayer.addMediaItem(mediaItem)
+                mainPlayer.prepare()
+            }
         }
         Collections.rotate(mediaItemList, -1)
         for (mediaItem in mediaItemList)
@@ -115,7 +119,6 @@ class CrossfadePlayer(
 
     fun onPlayPressed(): Boolean {
         Log.i(TAG, "isPlaying: ${mainPlayer.isPlaying}")
-        setVolume(0.0f)
         if (mainPlayer.isPlaying) {
             mainPlayer.pause()
             mainPlayer.next()
@@ -132,19 +135,21 @@ class CrossfadePlayer(
     }
 
     private fun playCrossfade() {
-        if (crossfadePlayer.isPlaying)
-            return
-        crossfadePlayer.prepare()
-        crossfadePlayer.play()
+        if (!crossfadePlayer.isPlaying) {
+            crossfadePlayer.prepare()
+            crossfadePlayer.play()
+        }
     }
 
     private fun setVolume(mSound: Float) {
+
         crossfadePlayer.volume = mSound
         mainPlayer.volume = 1.0f - mSound
     }
 
     private fun play() {
         mainPlayer.play()
+        setVolume(0.0f)
         mainPlayer.initListener()
     }
 

@@ -27,23 +27,23 @@ class SchedulerViewModel(
 
     private val TAG = "SchedulerViewModel"
     val _URL = "https://empireprojekt.ru/test.json"
-    private var _isLoading = MutableLiveData<Boolean>(true)
+    private var _isLoading = MutableLiveData(true)
     val isLoading: LiveData<Boolean>
         get() = _isLoading
 
-    private var _profileName = MutableLiveData<String>("Загрузка..")
+    private var _profileName = MutableLiveData("Загрузка..")
     val getProfile: LiveData<String>
         get() = _profileName
 
-    private val _connected = MutableLiveData<Boolean>(true)
+    private val _connected = MutableLiveData(true)
     val connected: LiveData<Boolean>
         get() = _connected
 
-    private var _timeZones = database.getTimeZones()
+    private var _timeZones = database.getAdvancedDayLiveData()
     val timeZones: LiveData<List<JsonParseClasses.AdvancedDay>>
         get() = _timeZones
 
-    private var _fileLoading = MutableLiveData<String>("")
+    private var _fileLoading = MutableLiveData("")
     public val fileLoading: LiveData<String>
         get() = _fileLoading
 
@@ -56,6 +56,7 @@ class SchedulerViewModel(
     private fun downloadFiles(cacheDir: File) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
+                val profile = database.getProfile()
                 for (file: JsonParseClasses.ProfileFile in database.getFiles()) {
                     try {
                         _fileLoading.postValue(file.name)
@@ -73,14 +74,14 @@ class SchedulerViewModel(
                         file.isBroken = true
                     }
                     //По умолчанию все файлы в порядке
-//                    if (file.isBroken) {
-//                        database.updateBrokenPlaylisByMusicID(file.isBroken, file.id)
-//                        for (plId: Long in database.getPlaylistsByMusicId(file.id))
-//                            database.updateTimezoneBrokentByPlaylistId(file.isBroken, plId)
-//                    }
+                    if (file.isBroken) {
+                        profile.setBrokenFile(file)
+                        database.updateProfile(profile)
+                        for (pl in profile.getPlaylistByMusicID(file))
+                            database.updateBrokenAdvancedDayByPlaylistID(file.isBroken, pl.id)
+                    }
                 }
-                _timeZones = database.getTimeZones()
-
+                _timeZones = database.getAdvancedDayLiveData()
             }
             _isLoading.value = false
         }
@@ -100,23 +101,18 @@ class SchedulerViewModel(
         withContext(Dispatchers.IO) {
             try {
                 val jsonStr: JSONObject = JSONObject(URL(_URL).readText())
-
                 val profile =
                     Gson().fromJson(jsonStr.toString(), JsonParseClasses.Profile::class.java)
-
                 profile.initAdvancedProfile()
                 //Берем название профила и ставим его для отображения
                 _profileName.postValue(profile.name)
                 //Таблица файлов
-                database.fileInsert(profile.getAllFiles())
+                database.insertProfile(profile.getAllFiles())
                 //Таблица профиля
                 database.insertProfile(profile)
                 //Таблица времени
-                database.insertTimezone(profile.schedule.advancedDays)
-
-
-                //downloadFiles(cacheDir)
-                _isLoading.postValue(false)
+                database.insertAdvancedDay(profile.schedule.advancedDays)
+                downloadFiles(cacheDir)
             } catch (e: UnknownHostException) {
                 //Если нет соединения
                 _connected.postValue(false)
@@ -127,15 +123,16 @@ class SchedulerViewModel(
     }
 
 
+
     //При нажатии на элемент recyclerView меняем пропорцию
     private suspend fun onProportionChanged(advancedDay: JsonParseClasses.AdvancedDay, k: Int) {
         withContext(Dispatchers.IO) {
-            advancedDay.playlistProportion += k
-            if (advancedDay.playlistProportion < 1)
+            advancedDay.playlistProportion+=k
+            if (advancedDay.playlistProportion<1)
                 advancedDay.playlistProportion = 1
-            database.timeZoneUpdate(advancedDay)
+            database.updateAdvancedDay(advancedDay)
+            _timeZones = database.getAdvancedDayLiveData()
 
-            _timeZones = database.getTimeZones()
         }
     }
 
@@ -151,8 +148,6 @@ class SchedulerViewModel(
             }
         }
     }
-
-
     override fun onCleared() {
         super.onCleared()
     }

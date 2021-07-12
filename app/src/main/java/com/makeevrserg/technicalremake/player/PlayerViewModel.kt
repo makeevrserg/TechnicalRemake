@@ -8,14 +8,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.makeevrserg.technicalremake.Util
 import com.makeevrserg.technicalremake.database.*
-import com.makeevrserg.technicalremake.scheduler.JsonParseClasses
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.*
 import kotlin.concurrent.fixedRateTimer
-import kotlin.random.Random
 
 class PlayerViewModel(
         val database: DatabaseDao,
@@ -23,26 +19,26 @@ class PlayerViewModel(
 ) : AndroidViewModel(application) {
 
 
-    private var _isLoading = MutableLiveData<Boolean>(true)
-    public val isLoading: LiveData<Boolean>
+    private var _isLoading = MutableLiveData(true)
+    val isLoading: LiveData<Boolean>
         get() = _isLoading
 
-    private var _isPlaying = MutableLiveData<Boolean>(false)
-    public val isPlaying: LiveData<Boolean>
+    private var _isPlaying = MutableLiveData(false)
+    val isPlaying: LiveData<Boolean>
         get() = _isPlaying
 
-    private var _isUpdated = MutableLiveData<Boolean>(false)
-    public val isUpdated: LiveData<Boolean>
+    private var _isUpdated = MutableLiveData(false)
+    val isUpdated: LiveData<Boolean>
         get() = _isUpdated
 
-    private var _isEmpty = MutableLiveData<Boolean>(false)
-    public val isEmpty: LiveData<Boolean>
+    private var _isEmpty = MutableLiveData(false)
+    val isEmpty: LiveData<Boolean>
         get() = _isEmpty
 
-    public val playlistName: LiveData<String>
+    val playlistName: LiveData<String>
         get() = crossfadePlayer.mediaPlaylist
 
-    public val musicName: LiveData<String>
+    val musicName: LiveData<String>
         get() = crossfadePlayer.mediaName
 
     val TAG = "PlayerViewModel"
@@ -52,15 +48,13 @@ class PlayerViewModel(
     private var crossfadePlayer: CrossfadePlayer =
             CrossfadePlayer(application.applicationContext, cacheDir.path)
 
-    lateinit var timer: Timer
-
+    var timer: Timer
     init {
         //Ставим таймер чтобы он чекал на обновление времени
         timer = fixedRateTimer("MusicUpdateTimer", true, 0, 5000) {
             Log.i(TAG, "Timer Checking: ")
            loadData()
         }
-
     }
 
     var oldPlaylistMap: MutableMap<Long, Int>? = null
@@ -69,7 +63,7 @@ class PlayerViewModel(
     private fun loadData() {
         viewModelScope.launch {
             val profile = database.getProfile()
-
+            profile.schedule.advancedDays = database.getAdvancedDays()
 
             val proportionMap = profile.getProportionMapByTime(Util.getCurrentTime())
 
@@ -81,40 +75,31 @@ class PlayerViewModel(
                 timer.cancel()
                 return@launch
             }
-            if (oldPlaylistMap == proportionMap) {
+            if (oldPlaylistMap == proportionMap)
                 return@launch
-            } else
+             else
                 oldPlaylistMap = proportionMap
 
-            val files = profile.getFilesByTime(Util.getCurrentTime())
-            if (files.isEmpty()) {
+            val fileByPlaylistID = profile.getFilesByTime(Util.getCurrentTime())
+            if (fileByPlaylistID.isEmpty()) {
                 _isEmpty.postValue(true)
                 return@launch
             }
-            crossfadePlayer.update(files)
+            crossfadePlayer.update(fileByPlaylistID)
             _isLoading.postValue(false)
             _isUpdated.postValue(true)
             _isPlaying.postValue(false)
         }
     }
-
-
-    data class MusicInfo(val fileName: String, val playlistName: String)
-
-
-
     fun playButtonOnClick() {
         _isPlaying.value = crossfadePlayer.onPlayPressed()
     }
-
-
     override fun onCleared() {
         crossfadePlayer.stop()
         timer.purge()
         timer.cancel()
         super.onCleared()
     }
-
     fun doneShowingSnackBar() {
         _isUpdated.value = false
     }

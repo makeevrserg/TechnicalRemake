@@ -26,8 +26,18 @@ class JsonParseClasses {
         val name: String,
         val duration: Long,
         val random: Boolean,
-        val files: List<ProfileFile>
-    )
+        val files: MutableList<ProfileFile>
+    ) {
+        public fun getFileIndexById(id: Long): Int? {
+            var i = 0
+            for (file in files) {
+                if (file.id == id)
+                    return i
+                i++
+            }
+            return null
+        }
+    }
 
     data class TempPlaylistsTimezone(
         val playlist_id: Long,
@@ -145,8 +155,11 @@ class JsonParseClasses {
         fun getPlaylistByMusicID(file: ProfileFile): MutableList<ProfilePlaylist> {
             val list = mutableListOf<ProfilePlaylist>()
             for (playlist in schedule.playlists)
-                if (playlist.files.contains(file))
-                    list.add(playlist)
+                for (other in playlist.files)
+                    if (file.id == other.id) {
+                        list.add(playlist)
+                        break
+                    }
             return list
         }
 
@@ -163,6 +176,13 @@ class JsonParseClasses {
                 if (playlist.id == id)
                     list.addAll(playlist.files)
             return list
+        }
+
+        fun setBrokenFile(file: ProfileFile) {
+            for (playlsit in schedule.playlists) {
+                val index = playlsit.getFileIndexById(file.id)?:continue
+                playlsit.files[index] = file
+            }
         }
 
         fun getAllFiles(): List<ProfileFile> {
@@ -190,22 +210,23 @@ class JsonParseClasses {
 
         }
 
-        fun getFilesByTime(time: String): List<ProfileFile> {
+        fun getFilesByTime(time: String): Map<String, List<ProfileFile>> {
             val proportions = getProportionMapByTime(time)
 
-            val files = mutableListOf<ProfileFile>()
+            val filesByPlaylistName = mutableMapOf<String,List<ProfileFile>>()
             for (playlistID in proportions.keys) {
                 val playlist = getPlaylistByPlaylistID(playlistID) ?: continue
-
+                val fileList = mutableListOf<ProfileFile>()
                 for (i in 0 until proportions[playlistID]!!) {
                     var file: ProfileFile
                     do {
                         file = playlist.files[Random().nextInt(playlist.files.size)]
                     } while (file.isBroken)
-                    files.add(file)
+                    fileList.add(file)
                 }
+                filesByPlaylistName[getPlaylistByPlaylistID(playlistID)?.name?:continue] = fileList
             }
-            return files
+            return filesByPlaylistName
 
         }
 

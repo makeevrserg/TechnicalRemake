@@ -81,7 +81,6 @@
             android:scaleType="fitCenter"
             android:visibility="@{viewModel.isLoading()? View.GONE:View.VISIBLE}"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:playerActivity="@{viewModel.isPlaying()}"
-            app:srcCompat="@drawable/ic_play" />
+            android:src="@{viewModel.isPlaying()?@drawable/ic_pause:@drawable/ic_play}" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
