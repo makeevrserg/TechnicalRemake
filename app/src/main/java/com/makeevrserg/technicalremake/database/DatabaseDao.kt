@@ -1,9 +1,8 @@
 package com.makeevrserg.technicalremake.database
 
-import androidx.lifecycle.LiveData
 import androidx.room.*
-import com.makeevrserg.technicalremake.scheduler.JsonParseClasses
-import com.makeevrserg.technicalremake.scheduler.JsonParseClasses.ProfileFile
+import com.makeevrserg.technicalremake.database.entities.*
+
 
 @Dao
 interface DatabaseDao {
@@ -11,41 +10,45 @@ interface DatabaseDao {
 
     //Profile
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertProfile(fileDatabase: ProfileFile)
+    suspend fun insertProfile(fileDatabase: PlayerProfile)
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertProfile(fileDatabase: List<ProfileFile>)
+    suspend fun insertProfileList(fileDatabase: List<PlayerProfile>)
     @Update
-    suspend fun updateProfile(profile:JsonParseClasses.Profile)
+    suspend fun updateProfile(profile:PlayerProfile)
 
+    //PlayerPlaylist
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertPlayerPlaylist(playerPlaylists:List<PlayerPlaylist>)
     //Files
     @Update
-    suspend fun fileUpdate(fileDatabase: ProfileFile)
+    suspend fun fileUpdate(fileDatabase: PlayerFile)
     @Query("SELECT * FROM files WHERE id=:key")
-    suspend fun getFile(key: Long): ProfileFile?
+    suspend fun getFile(key: Long): PlayerFile?
     @Query("SELECT * FROM files ")
-    suspend fun getAllFiles(): List<ProfileFile>
-    @Query("SELECT file_name from files WHERE id=:key and isBroken=0")
-    suspend fun getFileName(key: Long): String
+    suspend fun getAllFiles(): List<PlayerFile>
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertPlayerFile(files:List<PlayerFile>)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertPlayerFile(files:PlayerFile)
 
+    //PlayerDay
+    @Insert
+    suspend fun insertPlayerDay(day:List<PlayerDay>)
+    //PlayerTimeZone
+    @Insert
+    suspend fun insertPlayerTimeZones(timezones:List<PlayerTimezone>)
+    //PlayerPlaylistProportion
+    @Insert
+    suspend fun insertPlayerPlaylistProportion(props:List<PlayerPlaylistProportion>)
     //Profile
     @Insert
-    fun insertProfile(profile: JsonParseClasses.Profile)
+    fun insertProfileList(profile: PlayerProfile)
     @Query("SELECT * FROM profile")
-    suspend fun getProfile(): JsonParseClasses.Profile
+    suspend fun getProfile(): PlayerProfile
 
+//    @Transaction
+//    @Query("SELECT * FROM profile WHERE name=:profileName")
+//    suspend fun getProfileAndPlaylists(profileName:String):List<ProfileAndPlaylist>
 
-    //AdvancedDays
-    @Query("SELECT * FROM timings")
-    fun getAdvancedDayLiveData(): LiveData<List<JsonParseClasses.AdvancedDay>>
-    @Query("UPDATE timings set isBroken=:isBroken WHERE playlistId=:id")
-    suspend fun updateBrokenAdvancedDayByPlaylistID(isBroken: Boolean, id: Long)
-    @Query("SELECT * FROM timings")
-    suspend fun getAdvancedDays(): List<JsonParseClasses.AdvancedDay>
-    @Insert
-    fun insertAdvancedDay(days: JsonParseClasses.AdvancedDay)
-    @Insert
-    fun insertAdvancedDay(days: List<JsonParseClasses.AdvancedDay>)
-    @Update
-    fun updateAdvancedDay(day: JsonParseClasses.AdvancedDay)
 
 }

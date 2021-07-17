@@ -5,9 +5,12 @@ import android.os.Looper
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.google.android.exoplayer2.*
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.MediaMetadata
+import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
-import com.makeevrserg.technicalremake.scheduler.JsonParseClasses.*
+import com.makeevrserg.technicalremake.database.entities.PlayerFile
 import java.util.*
 
 
@@ -40,7 +43,7 @@ class CrossfadePlayer(
         crossfadePlayer = buildPlayer()
     }
 
-    fun update(filesByPlaylistID: Map<String, List<ProfileFile>>) {
+    fun update(filesByPlaylistID: Map<String, List<PlayerFile>>) {
         stop()
         generatePlayer(filesByPlaylistID)
     }
@@ -91,7 +94,7 @@ class CrossfadePlayer(
 
     }
 
-    private fun getMediaItem(file: ProfileFile, playlistName: String): MediaItem {
+    private fun getMediaItem(file: PlayerFile, playlistName: String): MediaItem {
         return MediaItem.Builder().setUri(cacheDir + "/" + file.name)
             .setMediaId(file.name)
             .setMediaMetadata(
@@ -100,7 +103,7 @@ class CrossfadePlayer(
             .build()
     }
 
-    private fun generatePlayer(filesByPlaylistID: Map<String, List<ProfileFile>>) {
+    private fun generatePlayer(filesByPlaylistID: Map<String, List<PlayerFile>>) {
         val mediaItemList = mutableListOf<MediaItem>()
         for (playlistName in filesByPlaylistID.keys)
             for (file in filesByPlaylistID[playlistName]!!) {

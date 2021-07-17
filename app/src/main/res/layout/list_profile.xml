@@ -3,18 +3,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <data>
+<!--    <data>-->
 
-        <import type="android.view.View" />
+<!--        <import type="android.view.View" />-->
 
-        <variable
-            name="advancedDay"
-            type="com.makeevrserg.technicalremake.scheduler.JsonParseClasses.AdvancedDay" />
+<!--        <variable-->
+<!--            name="advancedDay"-->
+<!--            type="com.makeevrserg.technicalremake.scheduler.JsonParseClasses.AdvancedDay" />-->
 
-        <variable
-            name="clickListener"
-            type="com.makeevrserg.technicalremake.scheduler.TimeZoneListener" />
-    </data>
+<!--        <variable-->
+<!--            name="clickListener"-->
+<!--            type="com.makeevrserg.technicalremake.scheduler.TimeZoneListener" />-->
+<!--    </data>-->
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -25,15 +25,15 @@
             android:id="@+id/textViewDay"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@{advancedDay.day}"
             android:textColor="@color/black"
             android:textSize="20sp"
             android:textStyle="bold"
-            android:visibility="@{advancedDay.showDay?View.VISIBLE:View.GONE}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+<!--        android:text="@{advancedDay.day}"-->
+<!--        android:visibility="@{advancedDay.showDay?View.VISIBLE:View.GONE}"-->
 
         <LinearLayout
             android:id="@+id/linearLayout"
@@ -43,64 +43,64 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textViewDay"
-            android:visibility='@{(advancedDay.playlistProportion==-1)?View.GONE:View.VISIBLE}'>
-
+            >
+<!--            android:visibility='@{(advancedDay.playlistProportion==-1)?View.GONE:View.VISIBLE}'-->
 <!--            app:setDay="@{advancedDay}"-->
 
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:src="@{(!advancedDay.broken)?@drawable/ic_check:@drawable/ic_warn}"
-                android:textAlignment="center"/>
+<!--            <ImageView-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:src="@{(!advancedDay.broken)?@drawable/ic_check:@drawable/ic_warn}"-->
+<!--                android:textAlignment="center"/>-->
 
 
-            <TextView
-                android:id="@+id/textViewTimeFrom"
-                android:layout_width="150dp"
-                android:layout_height="match_parent"
-                android:layout_marginHorizontal="10sp"
-                android:text='@{advancedDay.from+"-"+advancedDay.to}'
-                android:textAlignment="textStart"
-                android:textColor="@color/black"
-                android:textSize="20sp" />
+<!--            <TextView-->
+<!--                android:id="@+id/textViewTimeFrom"-->
+<!--                android:layout_width="150dp"-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:layout_marginHorizontal="10sp"-->
+<!--                android:text='@{advancedDay.from+"-"+advancedDay.to}'-->
+<!--                android:textAlignment="textStart"-->
+<!--                android:textColor="@color/black"-->
+<!--                android:textSize="20sp" />-->
 
 
-            <TextView
-                android:id="@+id/textViewPlaylist"
-                android:layout_width="100dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:textSize="20sp"
-                android:text="@{String.valueOf(advancedDay.playlistName)}"
-                android:textAlignment="textStart" />
+<!--            <TextView-->
+<!--                android:id="@+id/textViewPlaylist"-->
+<!--                android:layout_width="100dp"-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:layout_weight="1"-->
+<!--                android:textSize="20sp"-->
+<!--                android:text="@{String.valueOf(advancedDay.playlistName)}"-->
+<!--                android:textAlignment="textStart" />-->
 
 
-            <ImageView
-                android:id="@+id/imageViewSub"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:onClick="@{(v)->clickListener.onClick(advancedDay,v)}"
-                android:src="@drawable/ic_sub"
-                android:textAlignment="center" />
+<!--            <ImageView-->
+<!--                android:id="@+id/imageViewSub"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:onClick="@{(v)->clickListener.onClick(advancedDay,v)}"-->
+<!--                android:src="@drawable/ic_sub"-->
+<!--                android:textAlignment="center" />-->
 
 
-            <TextView
-                android:id="@+id/textViewProportion"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="10sp"
-                android:textAlignment="center"
-                android:textColor="@color/black"
-                android:text="@{advancedDay.proportion}"
-                android:textSize="20sp" />
+<!--            <TextView-->
+<!--                android:id="@+id/textViewProportion"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginHorizontal="10sp"-->
+<!--                android:textAlignment="center"-->
+<!--                android:textColor="@color/black"-->
+<!--                android:text="@{advancedDay.proportion}"-->
+<!--                android:textSize="20sp" />-->
 
-            <ImageView
-                android:id="@+id/imageViewAdd"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:onClick="@{(v)->clickListener.onClick(advancedDay,v)}"
-                android:src="@drawable/ic_add"
-                android:textAlignment="center" />
+<!--            <ImageView-->
+<!--                android:id="@+id/imageViewAdd"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:onClick="@{(v)->clickListener.onClick(advancedDay,v)}"-->
+<!--                android:src="@drawable/ic_add"-->
+<!--                android:textAlignment="center" />-->
 
 
         </LinearLayout>

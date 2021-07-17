@@ -1,7 +1,7 @@
 package com.makeevrserg.technicalremake
 
 import android.util.Log
-import com.makeevrserg.technicalremake.scheduler.JsonParseClasses
+import com.makeevrserg.technicalremake.database.entities.PlayerFile
 import java.io.*
 import java.net.HttpURLConnection
 import java.net.URL
@@ -28,7 +28,7 @@ class Util {
             return sb.toString()
         }
 
-        fun download(cacheDir: File, file: JsonParseClasses.ProfileFile): Boolean {
+        fun download(cacheDir: File, file: PlayerFile): Boolean {
 
             val url = URL(file.file_name)
             val connection: HttpURLConnection = url.openConnection() as HttpURLConnection
