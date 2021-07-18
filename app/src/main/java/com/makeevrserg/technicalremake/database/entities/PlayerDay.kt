@@ -9,7 +9,7 @@ data class PlayerDay(
     @PrimaryKey(autoGenerate = false)
     val day: String,
     @Ignore
-    val timeZones: List<PlayerTimezone> = mutableListOf()
+    val timeZones: MutableList<PlayerTimezone> = mutableListOf()
 ){
     constructor(day:String):this(day, mutableListOf())
 }

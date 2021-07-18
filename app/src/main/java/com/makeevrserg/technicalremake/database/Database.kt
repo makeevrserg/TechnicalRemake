@@ -4,8 +4,17 @@ import android.content.Context
 import androidx.room.*
 import androidx.room.Database
 import com.makeevrserg.technicalremake.database.entities.*
+import com.makeevrserg.technicalremake.database.entities.relation.crossrefs.FilePlaylistCrossRef
 
-@Database(entities = [PlayerProfile::class,PlayerPlaylist::class,PlayerFile::class,PlayerDay::class,PlayerTimezone::class,PlayerPlaylistProportion::class], version = 14, exportSchema = false)
+@Database(
+    entities = [PlayerProfile::class,
+        PlayerPlaylist::class,
+        PlayerFile::class,
+        PlayerDay::class,
+        PlayerTimezone::class,
+        PlayerPlaylistProportion::class,
+        FilePlaylistCrossRef::class], version = 14, exportSchema = false
+)
 abstract class Database : RoomDatabase() {
     abstract val databaseDao: DatabaseDao
 

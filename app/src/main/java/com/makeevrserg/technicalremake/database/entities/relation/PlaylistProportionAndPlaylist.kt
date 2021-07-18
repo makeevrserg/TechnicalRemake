@@ -10,7 +10,7 @@ data class PlaylistProportionAndPlaylist (
     val playlistProportion: PlayerPlaylistProportion,
     @Relation(
         parentColumn = "id",
-        entityColumn = "id"
+        entityColumn = "playlist_id"
     )
     val playlist: PlayerPlaylist
 

@@ -1,7 +1,12 @@
 package com.makeevrserg.technicalremake.database
 
+import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.makeevrserg.technicalremake.database.entities.*
+import com.makeevrserg.technicalremake.database.entities.relation.DayAndTimeZones
+import com.makeevrserg.technicalremake.database.entities.relation.PlaylistWithFiles
+import com.makeevrserg.technicalremake.database.entities.relation.TimeZoneAndPlaylistProportion
+import com.makeevrserg.technicalremake.database.entities.relation.crossrefs.FilePlaylistCrossRef
 
 
 @Dao
@@ -22,7 +27,7 @@ interface DatabaseDao {
     //Files
     @Update
     suspend fun fileUpdate(fileDatabase: PlayerFile)
-    @Query("SELECT * FROM files WHERE id=:key")
+    @Query("SELECT * FROM files WHERE file_id=:key")
     suspend fun getFile(key: Long): PlayerFile?
     @Query("SELECT * FROM files ")
     suspend fun getAllFiles(): List<PlayerFile>
@@ -38,7 +43,7 @@ interface DatabaseDao {
     @Insert
     suspend fun insertPlayerTimeZones(timezones:List<PlayerTimezone>)
     //PlayerPlaylistProportion
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertPlayerPlaylistProportion(props:List<PlayerPlaylistProportion>)
     //Profile
     @Insert
@@ -46,6 +51,27 @@ interface DatabaseDao {
     @Query("SELECT * FROM profile")
     suspend fun getProfile(): PlayerProfile
 
+
+    //DayAndTimeZone
+    @Transaction
+    @Query("SELECT * FROM PlayerDay WHERE day=:day")
+    suspend fun getDayAndTimezones(day:String):DayAndTimeZones
+
+    //FilePlaylistCrossRef
+    @Insert
+    suspend fun insertFilePlaylistCrossRefs(list:List<FilePlaylistCrossRef>)
+
+    //TimeZoneAndPlaylistProportion
+//    @Transaction
+//    @Query("SELECT * FROM playertimezone WHERE day=:day")
+//    suspend fun getTimeZoneAndPlaylistProportion(day:String): LiveData<List<TimeZoneAndPlaylistProportion>>
+
+    @Transaction
+    @Query("SELECT * FROM playertimezone")
+    suspend fun getAllTimeZoneAndPlaylistProportion(): List<TimeZoneAndPlaylistProportion>
+
+    @Query("SELECT * FROM playerplaylist WHERE playlist_id=:playlist_id")
+    suspend fun getFilesOfPlaylist(playlist_id:Long):PlaylistWithFiles
 //    @Transaction
 //    @Query("SELECT * FROM profile WHERE name=:profileName")
 //    suspend fun getProfileAndPlaylists(profileName:String):List<ProfileAndPlaylist>

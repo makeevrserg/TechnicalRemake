@@ -5,13 +5,11 @@ import androidx.room.Relation
 import com.makeevrserg.technicalremake.database.entities.PlayerPlaylistProportion
 import com.makeevrserg.technicalremake.database.entities.PlayerTimezone
 
-data class TimeZoneAndPlaylistProportions(
-    @Embedded
-    val timeZone:PlayerTimezone,
+class TimeZoneAndPlaylistProportion(
+    @Embedded val timeZone:PlayerTimezone,
     @Relation(
-        parentColumn = "id",
-        entityColumn = "id"
+        parentColumn = "day",
+        entityColumn = "day"
     )
-    val playlistProportions:List<PlayerPlaylistProportion>
-
+    val playlistProp:PlayerPlaylistProportion
 )

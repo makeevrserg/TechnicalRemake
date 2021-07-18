@@ -10,8 +10,13 @@ data class DayAndTimeZones(
     val day: PlayerDay,
     @Relation(
         parentColumn = "day",
-        entityColumn = "id"
+        entityColumn = "day"
     )
-    val timezones: List<PlayerTimezone>
-)
+    private val timezones: List<PlayerTimezone>
+){
+    init {
+        day.timeZones.addAll(timezones)
+    }
+}
+
 

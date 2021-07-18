@@ -4,10 +4,9 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 
-@Entity
+@Entity(primaryKeys = ["day","playlist_id"])
 data class PlayerPlaylistProportion(
-    @PrimaryKey(autoGenerate = true)
-    val id:Long,//todo
+    var day:String,
     val playlist_id: Long,
     val proportion: Int
 )
