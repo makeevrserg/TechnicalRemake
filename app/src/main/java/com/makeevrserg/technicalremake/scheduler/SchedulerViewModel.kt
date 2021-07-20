@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.makeevrserg.technicalremake.Util
 import com.makeevrserg.technicalremake.database.*
+import com.makeevrserg.technicalremake.database.entities.PlayerPlaylistProportion
 import com.makeevrserg.technicalremake.database.entities.PlayerProfile
 import com.makeevrserg.technicalremake.database.entities.relation.TimeZoneAndPlaylistProportion
 import com.makeevrserg.technicalremake.database.entities.relation.crossrefs.FilePlaylistCrossRef
@@ -42,8 +43,9 @@ class SchedulerViewModel(
     val connected: LiveData<Boolean>
         get() = _connected
 
-    private var _timeZones:LiveData<List<TimeZoneAndPlaylistProportion>> = MutableLiveData()
-    val timeZones: LiveData<List<TimeZoneAndPlaylistProportion>>
+    private var _timeZones: LiveData<List<PlayerPlaylistProportion>> =
+        database.getPlayerPlaylistProportion()
+    val timeZones: LiveData<List<PlayerPlaylistProportion>>
         get() = _timeZones
 
     private var _fileLoading = MutableLiveData("Получение списка файлов...")
@@ -60,32 +62,35 @@ class SchedulerViewModel(
     private fun downloadFiles(cacheDir: File) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                val profile = database.getProfile()
-                for (file in database.getAllFiles()) {
-                    try {
-                        _fileLoading.postValue(file.name)
-                        file.isBroken = Util.download(cacheDir, file)
-                        database.fileUpdate(file)
-                    } catch (e: FileNotFoundException) {
-                        file.isBroken = true
-                    } catch (e: ConnectException) {
-                        file.isBroken = true
-                    } catch (e: SSLHandshakeException) {
-                        file.isBroken = true
-                    } catch (e: IOException) {
-                        file.isBroken = true
-                    } catch (e: EOFException) {
-                        file.isBroken = true
-                    }
-//                    //По умолчанию все файлы в порядке
-//                    if (file.isBroken) {
-//                        profile.setBrokenFile(file)
-//                        database.updateProfile(profile)
-//                        for (pl in profile.getPlaylistByMusicID(file))
-//                            database.updateBrokenAdvancedDayByPlaylistID(file.isBroken, pl.id)
+//                val profile = database.getProfile()
+//                for (file in database.getAllFiles()) {
+//                    try {
+//                        _fileLoading.postValue(file.name)
+//                        file.isBroken = Util.download(cacheDir, file)
+//                        database.fileUpdate(file)
+//                    } catch (e: FileNotFoundException) {
+//                        file.isBroken = true
+//                    } catch (e: ConnectException) {
+//                        file.isBroken = true
+//                    } catch (e: SSLHandshakeException) {
+//                        file.isBroken = true
+//                    } catch (e: IOException) {
+//                        file.isBroken = true
+//                    } catch (e: EOFException) {
+//                        file.isBroken = true
 //                    }
-                }
-                _timeZones = MutableLiveData(database.getAllTimeZoneAndPlaylistProportion())
+////                    //По умолчанию все файлы в порядке
+////                    if (file.isBroken) {
+////                        profile.setBrokenFile(file)
+////                        database.updateProfile(profile)
+////                        for (pl in profile.getPlaylistByMusicID(file))
+////                            database.updateBrokenAdvancedDayByPlaylistID(file.isBroken, pl.id)
+////                    }
+//                }
+
+                _timeZones = database.getPlayerPlaylistProportion()
+
+
             }
             _isLoading.value = false
         }
@@ -133,20 +138,25 @@ class SchedulerViewModel(
                 }
                 //Добавляем пропорции
                 profile.schedule.days.forEach { day ->
+                    var showDay = true
                     day.timeZones.forEach { timeZone ->
-                        timeZone.playlists.forEach { it->it.day = timeZone.day }
+                        for (i in timeZone.playlists.indices) {
+                            timeZone.playlists[i].showDay = showDay
+
+                            println("$i ${timeZone.playlists[i].showDay}")
+                            timeZone.playlists[i].day = timeZone.day
+                            timeZone.playlists[i].from = timeZone.from
+                            timeZone.playlists[i].playlistName =
+                                database.getPlaylistNameByID(timeZone.playlists[i].playlist_id)
+                            timeZone.playlists[i].to = timeZone.to
+                            showDay = false
+                        }
                         database.insertPlayerPlaylistProportion(timeZone.playlists)
                     }
+
                 }
 
-//                val filesOfPl = database.getFilesOfPlaylist(288)
-//                Log.d(TAG, "createDatabase: ${filesOfPl.playlist}")
-//
-//                val datAndTimezone = database.getDayAndTimezones("monday")
-//                Log.d(TAG, "createDatabase: ${datAndTimezone.day}")
-//                val timeZOneAndPlaylistProportion = database.getTimeZoneAndPlaylistProportion("monday")
-//                for (tz in timeZOneAndPlaylistProportion)
-//                Log.d(TAG, "createDatabase: ${tz.timeZone} ${tz.playlistProp}")
+
                 //Скачиваем
                 downloadFiles(cacheDir)
             } catch (e: UnknownHostException) {
@@ -160,19 +170,19 @@ class SchedulerViewModel(
 
 
     //При нажатии на элемент recyclerView меняем пропорцию
-    private suspend fun onProportionChanged(advancedDay: TimeZoneAndPlaylistProportion, k: Int) {
+    private suspend fun onProportionChanged(advancedDay: PlayerPlaylistProportion, k: Int) {
         withContext(Dispatchers.IO) {
 //            advancedDay.playlistProportion += k
 //            if (advancedDay.playlistProportion < 1)
 //                advancedDay.playlistProportion = 1
 //            database.updateAdvancedDay(advancedDay)
-            _timeZones.value?:return@withContext
+            _timeZones.value ?: return@withContext
 //            _timeZones = database.getAdvancedDayLiveData()
 
         }
     }
 
-    fun callOnProportionChanged(advancedDay: TimeZoneAndPlaylistProportion, k: Int) {
+    fun callOnProportionChanged(advancedDay: PlayerPlaylistProportion, k: Int) {
         viewModelScope.launch {
             onProportionChanged(advancedDay, k)
         }

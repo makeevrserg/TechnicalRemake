@@ -6,12 +6,13 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.makeevrserg.technicalremake.database.entities.PlayerPlaylistProportion
 import com.makeevrserg.technicalremake.database.entities.relation.TimeZoneAndPlaylistProportion
 import com.makeevrserg.technicalremake.databinding.ListProfileBinding
 
 
 class RecAdapter(private val clickListener: TimeZoneListener) :
-    ListAdapter<TimeZoneAndPlaylistProportion, RecAdapter.ViewHolder>(
+    ListAdapter<PlayerPlaylistProportion, RecAdapter.ViewHolder>(
         TimeZoneDiffCallback()
     ) {
 
@@ -27,7 +28,7 @@ class RecAdapter(private val clickListener: TimeZoneListener) :
 
     class ViewHolder private constructor(private val binding: ListProfileBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: TimeZoneAndPlaylistProportion, clickListener: TimeZoneListener) {
+        fun bind(item: PlayerPlaylistProportion, clickListener: TimeZoneListener) {
             binding.item = item
             binding.clickListener = clickListener
             binding.executePendingBindings()
@@ -42,17 +43,17 @@ class RecAdapter(private val clickListener: TimeZoneListener) :
         }
     }
 
-    class TimeZoneDiffCallback : DiffUtil.ItemCallback<TimeZoneAndPlaylistProportion>() {
+    class TimeZoneDiffCallback : DiffUtil.ItemCallback<PlayerPlaylistProportion>() {
         override fun areItemsTheSame(
-            oldItem: TimeZoneAndPlaylistProportion,
-            newItem: TimeZoneAndPlaylistProportion
+            oldItem: PlayerPlaylistProportion,
+            newItem: PlayerPlaylistProportion
         ): Boolean {
-            return oldItem.timeZone.id == newItem.timeZone.id
+            return oldItem.id == newItem.id
         }
 
         override fun areContentsTheSame(
-            oldItem: TimeZoneAndPlaylistProportion,
-            newItem: TimeZoneAndPlaylistProportion
+            oldItem: PlayerPlaylistProportion,
+            newItem: PlayerPlaylistProportion
         ): Boolean {
 
             return false
@@ -61,7 +62,7 @@ class RecAdapter(private val clickListener: TimeZoneListener) :
 
 }
 
-class TimeZoneListener(val clickListener: (timeZone: TimeZoneAndPlaylistProportion, view: View) -> Unit) {
-    fun onClick(timeZone: TimeZoneAndPlaylistProportion, view: View) = clickListener(timeZone, view)
+class TimeZoneListener(val clickListener: (timeZone: PlayerPlaylistProportion, view: View) -> Unit) {
+    fun onClick(timeZone: PlayerPlaylistProportion, view: View) = clickListener(timeZone, view)
 
 }

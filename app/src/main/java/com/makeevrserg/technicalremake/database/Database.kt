@@ -17,7 +17,6 @@ import com.makeevrserg.technicalremake.database.entities.relation.crossrefs.File
 )
 abstract class Database : RoomDatabase() {
     abstract val databaseDao: DatabaseDao
-
     companion object {
         @Volatile
         private var INSTANCE: com.makeevrserg.technicalremake.database.Database? = null

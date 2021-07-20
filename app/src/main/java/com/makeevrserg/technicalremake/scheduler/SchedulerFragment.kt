@@ -43,22 +43,24 @@ class SchedulerFragment : Fragment() {
         binding.lifecycleOwner = this
 
         //RecyclerView
-//        val adapter = RecAdapter(TimeZoneListener { timeZone, view ->
-//            when (view.id) {
-//                R.id.imageViewAdd -> {
-//                    viewModel.callOnProportionChanged(timeZone, 1)
-//                }
-//                R.id.imageViewSub -> {
-//                    viewModel.callOnProportionChanged(timeZone, -1)
-//                }
-//            }
-//        })
-//        binding.recyclerView.adapter = adapter
-//        viewModel.timeZones.observe(viewLifecycleOwner, {
-//            it?.let {
-//                adapter.submitList(it.toMutableList())
-//            }
-//        })
+        val adapter = RecAdapter(TimeZoneListener { timeZone, view ->
+            when (view.id) {
+                R.id.imageViewAdd -> {
+                    viewModel.callOnProportionChanged(timeZone, 1)
+                }
+                R.id.imageViewSub -> {
+                    viewModel.callOnProportionChanged(timeZone, -1)
+                }
+            }
+        })
+        binding.recyclerView.adapter = adapter
+        viewModel.timeZones.observe(viewLifecycleOwner, {
+            it?.let {
+                for (k in it)
+                    println(k)
+                adapter.submitList(it.toMutableList())
+            }
+        })
         //Toolbar
         binding.toolbar.setOnMenuItemClickListener {
             when (it.itemId) {

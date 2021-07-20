@@ -1,6 +1,7 @@
 package com.makeevrserg.technicalremake.database
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.room.*
 import com.makeevrserg.technicalremake.database.entities.*
 import com.makeevrserg.technicalremake.database.entities.relation.DayAndTimeZones
@@ -24,6 +25,8 @@ interface DatabaseDao {
     //PlayerPlaylist
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPlayerPlaylist(playerPlaylists:List<PlayerPlaylist>)
+    @Query("SELECT name from PlayerPlaylist WHERE playlist_id=:id")
+    suspend fun getPlaylistNameByID(id:Long):String
     //Files
     @Update
     suspend fun fileUpdate(fileDatabase: PlayerFile)
@@ -45,6 +48,14 @@ interface DatabaseDao {
     //PlayerPlaylistProportion
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertPlayerPlaylistProportion(props:List<PlayerPlaylistProportion>)
+    @Query("SELECT * FROM PlayerPlaylistProportion")
+    fun getPlayerPlaylistProportion():LiveData<List<PlayerPlaylistProportion>>
+
+    @Query("SELECT * FROM PlayerPlaylistProportion WHERE :time BETWEEN 'from' AND 'to'")
+    fun getPlayerPlaylistProportionByTime(time:String):List<PlayerPlaylistProportion>
+
+
+
     //Profile
     @Insert
     fun insertProfileList(profile: PlayerProfile)
@@ -69,7 +80,7 @@ interface DatabaseDao {
     @Transaction
     @Query("SELECT * FROM playertimezone")
     suspend fun getAllTimeZoneAndPlaylistProportion(): List<TimeZoneAndPlaylistProportion>
-
+    @Transaction
     @Query("SELECT * FROM playerplaylist WHERE playlist_id=:playlist_id")
     suspend fun getFilesOfPlaylist(playlist_id:Long):PlaylistWithFiles
 //    @Transaction

@@ -5,7 +5,11 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.makeevrserg.technicalremake.database.DatabaseDao
+import com.makeevrserg.technicalremake.database.entities.PlayerFile
+import com.makeevrserg.technicalremake.database.entities.PlayerPlaylistProportion
+import kotlinx.coroutines.launch
 import java.io.File
 import java.util.*
 import kotlin.concurrent.fixedRateTimer
@@ -57,38 +61,51 @@ class PlayerViewModel(
 
     private var oldPlaylistMap: Map<Long, Int>? = null
 
+    private fun createProportionMap(playlistProportion: List<PlayerPlaylistProportion>): Map<Long, Int> {
+        val map = mutableMapOf<Long,Int>()
+        playlistProportion.forEach { p ->
+            map[p.playlist_id] = p.proportion
+        }
+        return map
+    }
 
-//    private fun loadData() {
-//        viewModelScope.launch {
-//            val profile = database.getProfile()
-//            profile.schedule.advancedDays = database.getAdvancedDays()
-//            val proportionMap = profile.getProportionMapByTime(Util.getCurrentTime())
-//
-//
-//
-//            //Мы не должны быть в этом фрагменте если нет музыки
-//            if (proportionMap.isEmpty()) {
-//                _isEmpty.value = true
-//                timer.purge()
-//                timer.cancel()
-//                return@launch
-//            }
-//            if (oldPlaylistMap == proportionMap)
-//                return@launch
-//
-//            oldPlaylistMap = proportionMap
-//
-//            val fileByPlaylistID = profile.getFilesByTime(Util.getCurrentTime())
-//            if (fileByPlaylistID.isEmpty()) {
-//                _isEmpty.postValue(true)
-//                return@launch
-//            }
-//            crossfadePlayer.update(fileByPlaylistID)
-//            _isLoading.postValue(false)
-//            _isUpdated.postValue(true)
-//            _isPlaying.postValue(false)
-//        }
-//    }
+    private fun loadData() {
+        viewModelScope.launch {
+            val playlistProportion = database.getPlayerPlaylistProportionByTime()
+            val proportionMap = createProportionMap(playlistProportion)
+
+
+            //Мы не должны быть в этом фрагменте если нет музыки
+            if (proportionMap.isEmpty()) {
+                _isEmpty.value = true
+                timer.purge()
+                timer.cancel()
+                return@launch
+            }
+            if (oldPlaylistMap == proportionMap)
+                return@launch
+
+            oldPlaylistMap = proportionMap
+
+            val fileByPlaylistID = mutableMapOf<String,List<PlayerFile>>()
+            for (map in proportionMap){
+                val list = mutableListOf<PlayerFile>()
+                val files = database.file
+                for (amount in 0 until map.value){
+
+                    list.add(database.getFile(amo))
+                }
+            }
+            if (fileByPlaylistID.isEmpty()) {
+                _isEmpty.postValue(true)
+                return@launch
+            }
+            crossfadePlayer.update(fileByPlaylistID)
+            _isLoading.postValue(false)
+            _isUpdated.postValue(true)
+            _isPlaying.postValue(false)
+        }
+    }
 
     fun playButtonOnClick() {
         _isPlaying.value = crossfadePlayer.onPlayPressed()

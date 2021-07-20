@@ -9,7 +9,7 @@
 
         <variable
             name="item"
-            type="com.makeevrserg.technicalremake.database.entities.relation.TimeZoneAndPlaylistProportion" />
+            type="com.makeevrserg.technicalremake.database.entities.PlayerPlaylistProportion" />
         <variable
             name="clickListener"
             type="com.makeevrserg.technicalremake.scheduler.TimeZoneListener" />
@@ -29,8 +29,8 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            android:text="@{item.timeZone.day}"
-            android:visibility="@{true?View.VISIBLE:View.GONE}"
+            android:text="@{item.day}"
+            android:visibility="@{item.showDay?View.VISIBLE:View.GONE}"
             app:layout_constraintTop_toTopOf="parent" />
 
 
@@ -42,9 +42,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textViewDay"
-            android:visibility='@{false?View.GONE:View.VISIBLE}'
-            app:setDay="@{item.timeZone.day}"
-            >
+            android:visibility='@{false?View.GONE:View.VISIBLE}'>
 
             <ImageView
                 android:layout_width="wrap_content"
@@ -58,7 +56,7 @@
                 android:layout_width="150dp"
                 android:layout_height="match_parent"
                 android:layout_marginHorizontal="10sp"
-                android:text='@{item.timeZone.from+"-"+item.timeZone.to}'
+                android:text='@{item.from+"-"+item.to}'
                 android:textAlignment="textStart"
                 android:textColor="@color/black"
                 android:textSize="20sp" />
@@ -70,7 +68,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:textSize="20sp"
-                android:text="aa"
+                android:text="@{item.playlistName}"
                 android:textAlignment="textStart" />
 
 
@@ -90,7 +88,7 @@
                 android:layout_marginHorizontal="10sp"
                 android:textAlignment="center"
                 android:textColor="@color/black"
-                android:text="@{item.playlistProp.proportion}"
+                android:text="@{String.valueOf(item.proportion)}"
                 android:textSize="20sp" />
 
             <ImageView
